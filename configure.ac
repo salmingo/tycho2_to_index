@@ -54,7 +54,7 @@ AM_CONDITIONAL(DEBUG, test x"$debug" = x"true")
 
 AC_CHECK_HEADER_STDBOOL
 AC_CHECK_HEADERS([stdlib.h])
-
+AC_CHECK_FUNCS([memset])
 AC_CONFIG_FILES(Makefile src/Makefile)
 AC_OUTPUT
 

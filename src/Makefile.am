@@ -1,5 +1,5 @@
 bin_PROGRAMS=tycho2index
-tycho2index_SOURCES=FITSHandler.hpp ATimeSpace.cpp tycho2index.cpp
+tycho2index_SOURCES=FITSHandler.hpp ATimeSpace.cpp build_index.cpp tycho2index.cpp
 
 if DEBUG
   AM_CFLAGS = -g3 -O0 -Wall -DNDEBUG

@@ -101,7 +101,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_tycho2index_OBJECTS = ATimeSpace.$(OBJEXT) tycho2index.$(OBJEXT)
+am_tycho2index_OBJECTS = ATimeSpace.$(OBJEXT) build_index.$(OBJEXT) \
+	tycho2index.$(OBJEXT)
 tycho2index_OBJECTS = $(am_tycho2index_OBJECTS)
 tycho2index_DEPENDENCIES =
 tycho2index_LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
@@ -122,7 +123,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/ATimeSpace.Po \
-	./$(DEPDIR)/tycho2index.Po
+	./$(DEPDIR)/build_index.Po ./$(DEPDIR)/tycho2index.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -280,7 +281,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-tycho2index_SOURCES = FITSHandler.hpp ATimeSpace.cpp tycho2index.cpp
+tycho2index_SOURCES = FITSHandler.hpp ATimeSpace.cpp build_index.cpp tycho2index.cpp
 @DEBUG_FALSE@AM_CFLAGS = -O3 -Wall
 @DEBUG_TRUE@AM_CFLAGS = -g3 -O0 -Wall -DNDEBUG
 @DEBUG_FALSE@AM_CXXFLAGS = -O3 -Wall
@@ -374,6 +375,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ATimeSpace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/build_index.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tycho2index.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -524,6 +526,7 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/ATimeSpace.Po
+	-rm -f ./$(DEPDIR)/build_index.Po
 	-rm -f ./$(DEPDIR)/tycho2index.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -571,6 +574,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/ATimeSpace.Po
+	-rm -f ./$(DEPDIR)/build_index.Po
 	-rm -f ./$(DEPDIR)/tycho2index.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
