@@ -11,6 +11,7 @@
 
 struct CatStar {
 	double ra, dc;		// J2000坐标, 量纲: 角度
+	float pmra, pmdc;	// 自行, 量纲: 角度/年
 	float mag;			// 星等
 };
 typedef std::vector<CatStar> CatStarVec;
@@ -43,5 +44,9 @@ void to_J2000(AstroUtil::ATimeSpace& ats, CatStar& star);
  * @param pathroot  根路径
  */
 void load_catalog(const char *pathroot);
+/*!
+ * @brief 星表依据赤纬和赤经增量排序
+ */
+void sort_catalog();
 
 #endif /* BUILD_INDEX_H_ */

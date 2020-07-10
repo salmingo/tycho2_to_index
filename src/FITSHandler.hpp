@@ -50,6 +50,14 @@ public:
 		return !errcode;
 	}
 
+	int* Status() {
+		return &errcode;
+	}
+
+	bool Success() {
+		return errcode == 0;
+	}
+
 	const char *GetError() {
 		fits_get_errstatus(errcode, errmsg);
 		return &errmsg[0];
@@ -107,7 +115,6 @@ public:
 	int MovetoHDU(int idx) {
 		if (idx < 1 || idx > hdunum) return 0;
 		int n0, n1;
-		errcode = 0;
 		fits_movabs_hdu(fitsptr, idx, hdutype + idx - 1, &errcode);
 		if (!errcode) fits_get_hdrspace(fitsptr, &n0, &n1, &errcode);
 		return (errcode ? 0 : n0);

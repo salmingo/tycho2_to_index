@@ -2,6 +2,7 @@
  * @file build_index.cpp 由tycho2星表生成星图匹配索引
  */
 #include <iostream>
+#include <algorithm>
 #include <boost/algorithm/string/trim.hpp>
 #include "ADefine.h"
 #include "build_index.h"
@@ -119,4 +120,14 @@ void load_catalog(const char *pathroot) {
 		}
 		fclose(fp);
 	}
+}
+
+void sort_catalog() {
+	sort(stars.begin(), stars.end(), [](CatStar& x1, CatStar& x2) {
+		int id1 = int((x1.dc + 90.0) / 2.5);
+		int id2 = int((x2.dc + 90.0) / 2.5);
+		int ir1 = int(x1.ra / 2.5);
+		int ir2 = int(x2.ra / 2.5);
+		return (id1 < id2 || (id1 == id2 && ir1 < ir2));
+	});
 }
