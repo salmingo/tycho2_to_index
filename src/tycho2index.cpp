@@ -125,7 +125,7 @@ void save_tycho2(const char* pathroot) {
  * @note
  * 命令行参数:
  * - 视场
- * -
+ * - 最暗星等
  */
 int main(int argc, char **argv) {
 	double fov = atof(argv[1]);
