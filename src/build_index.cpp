@@ -14,7 +14,7 @@ using namespace boost::algorithm;
 CatStarVec stars;
 
 bool resolve_cat(const string &line, CatStar &star) {
-	string ra_str, dc_str, bt_str, vt_str;
+	string ra_str, dc_str, pmra_str, pmdc_str, bt_str, vt_str;
 
 	if (line[13] == ' ') {
 		ra_str   = line.substr(15, 12);
@@ -26,11 +26,15 @@ bool resolve_cat(const string &line, CatStar &star) {
 	}
 	trim(ra_str);
 	trim(dc_str);
+	pmra_str = line.substr(41, 7); trim(pmra_str);
+	pmdc_str = line.substr(49, 7); trim(pmra_str);
 	bt_str   = line.substr(110, 6); trim(bt_str);
 	vt_str   = line.substr(123, 6); trim(vt_str);
 
-	star.ra = stod(ra_str);
-	star.dc = stod(dc_str);
+	star.ra  = int(stod(ra_str) * D2MAS);
+	star.spd = int((stod(dc_str) + 90.0) * D2MAS);
+	star.pmra = stod(pmra_str);
+	star.pmdc = stod(pmdc_str);
 	if (bt_str.size() || vt_str.size()) {
 		if (bt_str.size() && vt_str.size()) {
 			double vt = stod(vt_str);
@@ -60,8 +64,10 @@ bool resolve_suppl(const string &line, CatStar &star) {
 	string bt_str   = line.substr(83, 6);  trim(bt_str);
 	string vt_str   = line.substr(96, 6);  trim(vt_str);
 
-	star.ra = stod(ra_str);
-	star.dc = stod(dc_str);
+	star.ra  = int(stod(ra_str) * D2MAS);
+	star.spd = int((stod(dc_str) + 90.0) * D2MAS);
+	star.pmra = stod(pmra_str);
+	star.pmdc = stod(pmdc_str);
 	if (bt_str.size() || vt_str.size()) {
 		if (bt_str.size() && vt_str.size()) {
 			double vt = stod(vt_str);
@@ -77,10 +83,12 @@ bool resolve_suppl(const string &line, CatStar &star) {
 
 void to_J2000(ATimeSpace& ats, CatStar& star) {
 	double ra, dc;
-	double t = ats.Epoch() - 2000.0;
-	ats.EqReTransfer(star.ra * D2R, star.dc * D2R, ra, dc);
-	star.ra = ra * R2D;
-	star.dc = dc * R2D;
+	double t = 2000.0 - ats.Epoch();
+	ra = star.ra + star.pmra * t / cos(((star.spd * MAS2D) - 90.0) * D2R);
+	dc = star.spd * MAS2D - 90.0 + star.pmdc * t;
+	ats.EqReTransfer(ra * D2R, dc * D2R, ra, dc);
+	star.ra  = ra * R2D;
+	star.spd = (dc + 90.0) * R2D * D2MAS;
 }
 
 void load_catalog(const char *pathroot) {
@@ -124,8 +132,8 @@ void load_catalog(const char *pathroot) {
 
 void sort_catalog() {
 	sort(stars.begin(), stars.end(), [](CatStar& x1, CatStar& x2) {
-		int id1 = int((x1.dc + 90.0) / 2.5);
-		int id2 = int((x2.dc + 90.0) / 2.5);
+		int id1 = int(x1.spd / 2.5);
+		int id2 = int(x2.spd / 2.5);
 		int ir1 = int(x1.ra / 2.5);
 		int ir2 = int(x2.ra / 2.5);
 		return (id1 < id2 || (id1 == id2 && ir1 < ir2));

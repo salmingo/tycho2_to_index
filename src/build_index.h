@@ -10,7 +10,7 @@
 #include "ATimeSpace.h"
 
 struct CatStar {
-	double ra, dc;		// J2000坐标, 量纲: 角度
+	int ra, spd;		// J2000坐标, 量纲: 毫角秒
 	float pmra, pmdc;	// 自行, 量纲: 角度/年
 	float mag;			// 星等
 };

@@ -18,17 +18,14 @@
 using namespace AstroUtil;
 
 /*!
- * @brief 对tycho2星表排序, 并存储为FITS文件
+ * @brief 对tycho2星表排序, 并存储为DAT文件
  * @param pathroot 根路径
  * @note
  * - 星表按照第一优先级赤纬、第二优先级赤经排序. 赤经与赤纬步长=2.5度
- * - fits文件由3个HDU组成
- * - HDU 1: 描述信息
- * - HDU 2: 索引, BINARY_TBL类型, 数据类型: 无符号整数, 两列. 列1: 该区域第一颗星的索引, 索引起始地址=1; 列2: 该区域星的数量
- * - HDU 3: 三列, J2000坐标和星等, BINARY_TBL类型. 坐标: 量纲: 毫角秒, 数据类型: 无符号整数. 星等: 量纲: 毫星等, 数据类型: 16bit短整型
- *          列1: 赤经; 列2: 南极点距离; 列三: 星等
+ * - 文件由2部分组成
+ *   1: 索引
+ *   2: 数据
  */
-/*
 void save_tycho2(const char* pathroot) {
 	char filepath[100];
 	HFITS hfit;
@@ -49,7 +46,7 @@ void save_tycho2(const char* pathroot) {
 	uint32_t* head  = new uint32_t[m];
 	uint32_t* count = new uint32_t[n];
 	uint32_t* ra    = new uint32_t[n];
-	uint32_t* dc    = new uint32_t[n];
+	uint32_t* spd   = new uint32_t[n];
 	int16_t*  mag   = new int16_t[n];
 	double spd;
 
@@ -114,7 +111,6 @@ void save_tycho2(const char* pathroot) {
 	delete []dc;
 	delete []mag;
 }
-*/
 
 /*!
  * @brief 由Tycho2原始星表生成用于星图匹配的索引文件
