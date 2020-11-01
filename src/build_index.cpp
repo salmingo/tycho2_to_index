@@ -17,31 +17,28 @@ bool resolve_cat(const string &line, CatStar &star) {
 	string ra_str, dc_str, pmra_str, pmdc_str, bt_str, vt_str;
 
 	if (line[13] == ' ') {
-		ra_str   = line.substr(15, 12);
-		dc_str   = line.substr(28, 12);
+		ra_str   = line.substr(15, 12); trim(ra_str);
+		dc_str   = line.substr(28, 12); trim(dc_str);
 	}
 	else {
-		ra_str   = line.substr(152, 12);
-		dc_str   = line.substr(165, 12);
+		ra_str   = line.substr(152, 12); trim(ra_str);
+		dc_str   = line.substr(165, 12); trim(dc_str);
 	}
-	trim(ra_str);
-	trim(dc_str);
-	pmra_str = line.substr(41, 7); trim(pmra_str);
-	pmdc_str = line.substr(49, 7); trim(pmra_str);
+	pmra_str = line.substr(41, 7);  trim(pmra_str);
+	pmdc_str = line.substr(49, 7);  trim(pmdc_str);
 	bt_str   = line.substr(110, 6); trim(bt_str);
 	vt_str   = line.substr(123, 6); trim(vt_str);
-
 	star.ra  = int(stod(ra_str) * D2MAS);
 	star.spd = int((stod(dc_str) + 90.0) * D2MAS);
-	star.pmra = stod(pmra_str);
-	star.pmdc = stod(pmdc_str);
+	if (pmra_str.size()) star.pmra = short(stod(pmra_str));
+	if (pmdc_str.size()) star.pmdc = short(stod(pmdc_str));
 	if (bt_str.size() || vt_str.size()) {
 		if (bt_str.size() && vt_str.size()) {
 			double vt = stod(vt_str);
-			star.mag = vt - 0.09 * (stod(bt_str) - vt);
+			star.mag = short((vt - 0.09 * (stod(bt_str) - vt)) * 1000.0);
 		}
 		else {
-			star.mag = bt_str.size() ? stod(bt_str) : stod(vt_str);
+			star.mag = short((bt_str.size() ? stod(bt_str) : stod(vt_str)) * 1000.0);
 		}
 		return true;
 	}
@@ -66,15 +63,15 @@ bool resolve_suppl(const string &line, CatStar &star) {
 
 	star.ra  = int(stod(ra_str) * D2MAS);
 	star.spd = int((stod(dc_str) + 90.0) * D2MAS);
-	star.pmra = stod(pmra_str);
-	star.pmdc = stod(pmdc_str);
+	if (pmra_str.size()) star.pmra = short(stod(pmra_str));
+	if (pmdc_str.size()) star.pmdc = short(stod(pmdc_str));
 	if (bt_str.size() || vt_str.size()) {
 		if (bt_str.size() && vt_str.size()) {
 			double vt = stod(vt_str);
-			star.mag = vt - 0.09 * (stod(bt_str) - vt);
+			star.mag = short((vt - 0.09 * (stod(bt_str) - vt)) * 1000.0);
 		}
 		else {
-			star.mag = bt_str.size() ? stod(bt_str) : stod(vt_str);
+			star.mag = short((bt_str.size() ? stod(bt_str) : stod(vt_str)) * 1000.0);
 		}
 		return true;
 	}
@@ -84,11 +81,11 @@ bool resolve_suppl(const string &line, CatStar &star) {
 void to_J2000(ATimeSpace& ats, CatStar& star) {
 	double ra, dc;
 	double t = 2000.0 - ats.Epoch();
-	ra = star.ra + star.pmra * t / cos(((star.spd * MAS2D) - 90.0) * D2R);
-	dc = star.spd * MAS2D - 90.0 + star.pmdc * t;
+	ra = (star.ra + star.pmra * t / cos((star.spd * MAS2D - 90.0) * D2R)) * MAS2D;
+	dc = (star.spd + star.pmdc * t) * MAS2D - 90.0;
 	ats.EqReTransfer(ra * D2R, dc * D2R, ra, dc);
-	star.ra  = ra * R2D;
-	star.spd = (dc + 90.0) * R2D * D2MAS;
+	star.ra  = int(ra * R2D * D2MAS);
+	star.spd = int((dc * R2D + 90.0) * D2MAS);
 }
 
 void load_catalog(const char *pathroot) {
@@ -132,10 +129,11 @@ void load_catalog(const char *pathroot) {
 
 void sort_catalog() {
 	sort(stars.begin(), stars.end(), [](CatStar& x1, CatStar& x2) {
-		int id1 = int(x1.spd / 2.5);
-		int id2 = int(x2.spd / 2.5);
-		int ir1 = int(x1.ra / 2.5);
-		int ir2 = int(x2.ra / 2.5);
+		double scale = 0.4 * MAS2D;
+		int id1 = int(x1.spd * scale);
+		int id2 = int(x2.spd * scale);
+		int ir1 = int(x1.ra * scale);
+		int ir2 = int(x2.ra * scale);
 		return (id1 < id2 || (id1 == id2 && ir1 < ir2));
 	});
 }

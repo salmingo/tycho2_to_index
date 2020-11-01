@@ -7,12 +7,18 @@
 
 #include <string>
 #include <vector>
+#include <string.h>
 #include "ATimeSpace.h"
 
 struct CatStar {
 	int ra, spd;		// J2000坐标, 量纲: 毫角秒
-	float pmra, pmdc;	// 自行, 量纲: 角度/年
-	float mag;			// 星等
+	short pmra, pmdc;	// 自行, 量纲: 毫角秒/年
+	short mag;			// 0.001星等
+
+public:
+	CatStar() {
+		memset(this, 0, sizeof(CatStar));
+	}
 };
 typedef std::vector<CatStar> CatStarVec;
 extern CatStarVec stars;

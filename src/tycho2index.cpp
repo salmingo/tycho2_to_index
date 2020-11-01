@@ -27,89 +27,36 @@ using namespace AstroUtil;
  *   2: 数据
  */
 void save_tycho2(const char* pathroot) {
-	char filepath[100];
-	HFITS hfit;
-
-	sprintf (filepath, "%s/tycho2.fit", pathroot);
-	remove(filepath);
-
-	if (!hfit(filepath, 2)) {
-		printf ("failed to create file: %s\n", filepath);
-		return ;
-	}
 	// 转换数据格式
 	int n = stars.size();
 	int i, ir, id;
 	int zd = int(180.001 / 2.5);
 	int zr = int(360.001 / 2.5);
 	int m  = zd * zr;
-	uint32_t* head  = new uint32_t[m];
-	uint32_t* count = new uint32_t[n];
-	uint32_t* ra    = new uint32_t[n];
-	uint32_t* spd   = new uint32_t[n];
-	int16_t*  mag   = new int16_t[n];
-	double spd;
+	double scale = 0.4 * MAS2D;
+	struct quick_index {
+		uint32_t head, count;
+	};
+	quick_index *index = new quick_index[m];
 
-	memset(count, 0, sizeof(uint32_t) * m);
+	memset(index, 0, sizeof(quick_index) * m);
 	for (i = 0; i < n; ++i) {
-		id = int((spd = stars[i].dc + 90.0) / 2.5);
-		ir = int(stars[i].ra / 2.5);
-		++count[id * 144 + ir];
-		ra[i]  = uint32_t(stars[i].ra * 3600000.0);
-		dc[i]  = uint32_t(spd * 3600000.0);
-		mag[i] = int16_t(stars[i].mag * 1000.0);
+		id = int(stars[i].spd * scale);
+		ir = int(stars[i].ra * scale);
+		++index[id * zr + ir].count;
 	}
-	head[0] = 1;
-	for (i = 1; i < m; ++i) head[i] = head[i - 1] + count[i - 1];
-
-	// HDU 1
-	fits_create_img(hfit(), BYTE_IMG, 0, NULL, hfit.Status());
-	fits_write_comment(hfit(),
-			"simplified binary TYCHO2 catalog, just stores RA/DEC and Magnitude, expected to be used for celestial fix. "
-			"including all-sky stars from tycho2 and its' supplementary catalog. "
-			"RA is stored as 32-bit unsigned integer in milli arcsecs. "
-			"DEC is transformed to distance from SOUTH Pole and then stored as 32-bit unsigned ingeter in milli arcsecs. "
-			"Magnitude refers to V band from BT and VT, is stored as 16-bit integer in milli mag.",
-			hfit.Status());
-	fits_write_comment(hfit(),
-			"RA is stored as 32-bit unsigned integer in milli arcsecs. ",
-			hfit.Status());
-	fits_write_comment(hfit(),
-			"DEC is transformed to distance from SOUTH Pole and then stored as 32-bit unsigned ingeter in milli arcsecs. ",
-			hfit.Status());
-	fits_write_comment(hfit(),
-			"Magnitude refers to V band from BT and VT, is stored as 16-bit integer in milli mag.",
-			hfit.Status());
-	// HDU 2
-	char *ttype2[] = {"head index", "count"};
-	char *tform2[] = {"1J", "1J"};
-	fits_create_tbl(hfit(), BINARY_TBL, m, 2, ttype2, tform2, NULL, NULL, hfit.Status());
-	fits_write_comment(hfit(),
-			"quick index for sky quads. quads are divided by step 2.5 degrees on both RA and DEC. "
-			"quads count is 72 * 144 = 10368. first order is DEC and second is RA. ",
-			hfit.Status());
-	fits_write_col(hfit(), TUINT, 1, 1, 1, m, head,  hfit.Status());
-	fits_write_col(hfit(), TUINT, 2, 1, 1, m, count, hfit.Status());
-
-	// HDU 3
-	char *ttype3[] = {"RA", "DEC", "Mag"};
-	char *tform3[] = {"1J", "1J", "1I"};
-	char *tunit3[] = {"mas", "mas", "millimag"};
-	fits_create_tbl(hfit(), BINARY_TBL, n, 3, ttype3, tform3, tunit3, NULL, hfit.Status());
-	fits_write_col(hfit(), TUINT,  1, 1, 1, n, ra,  hfit.Status());
-	fits_write_col(hfit(), TUINT,  2, 1, 1, n, dc,  hfit.Status());
-	fits_write_col(hfit(), TSHORT, 3, 1, 1, n, mag, hfit.Status());
-
-	// 处理结果
-	if (hfit.Success()) printf ("catalog tycho2 is saved to [%s]\n", filepath);
-	else printf ("save_tycho2() failed: %s\n", hfit.GetError());
-
+	for (i = 1; i < m; ++i) index[i].head = index[i-1].head + index[i-1].count;
+	for (i = 0; i < m; ++i) printf ("%-7d  |  %4d ++ ", index[i].head, index[i].count);
+	printf ("\n");
+	// 输出星表
+	char filepath[100];
+	sprintf (filepath, "%s/tycho2.dat", pathroot);
+	FILE *fp = fopen(filepath, "wb");
+	fwrite(index, sizeof(quick_index), m, fp);
+	fwrite(stars.data(), sizeof(CatStar), n, fp);
+	fclose(fp);
 	// 释放资源
-	delete []head;
-	delete []count;
-	delete []ra;
-	delete []dc;
-	delete []mag;
+	delete []index;
 }
 
 /*!
@@ -124,7 +71,11 @@ void save_tycho2(const char* pathroot) {
  * - 最暗星等
  */
 int main(int argc, char **argv) {
-	double fov = atof(argv[1]);
-
+	load_catalog(".");
+	printf ("load_catalog() over\n");
+	sort_catalog();
+	printf ("sort_catalog() over\n");
+	save_tycho2(".");
+	printf ("save_tycho2() over\n");
 	return 0;
 }
