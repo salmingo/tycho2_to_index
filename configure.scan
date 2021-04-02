@@ -8,11 +8,7 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CXX
-AC_PROG_AWK
 AC_PROG_CC
-AC_PROG_INSTALL
-AC_PROG_CPP
-AC_PROG_MKDIR_P
 
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lcfitsio':
@@ -25,12 +21,11 @@ AC_CHECK_HEADERS([stdlib.h string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
+AC_TYPE_UINT32_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([memset pow])
 
 AC_CONFIG_FILES([Makefile
-                 release/Makefile
-                 release/src/Makefile
                  src/Makefile])
 AC_OUTPUT
