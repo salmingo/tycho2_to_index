@@ -9,6 +9,7 @@
  - 以BINTABLE格式, 在FITS文件中存储索引、坐标和自行
  */
 
+#include <getopt.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -80,11 +81,75 @@ using namespace AstroUtil;
 //	return 0;
 //}
 
+void Usage() {
+	printf( "Usage:\n"
+			"\t tycho2index [options] \n"
+			"\nOptions:\n"
+			" -h / --help   : print this help message\n"
+			" -F / --fov    : the diameter of field of view, in degrees\n"
+			" -M / --mag    : the faintest magnitude\n"
+			" -N / --num    : the least star number in one shape excluding both center and orient\n"
+			" -S / --style  : the style of output file. 1: BINARY; 2: FITS\n"
+			"\n"
+			);
+}
 
 /**
  * @brief
  * 由tycho2星表生成星表索引
  */
 int main(int argc, char** argv) {
+	struct option longopts[] = {
+		{ "help",    no_argument,       NULL, 'h' },
+		{ "fov",     required_argument, NULL, 'F' },
+		{ "mag",     required_argument, NULL, 'M' },
+		{ "num",     required_argument, NULL, 'N' },
+		{ "style",   required_argument, NULL, 'S' },
+		{ NULL,      0,           NULL,  0  }
+	};
+	char optstr[] = "hF:M:N:S:";
+	int ch, optndx;
+	double fov(1.0), faint(10.0);
+	int kstar(3), style(2);
+
+	while ((ch = getopt_long(argc, argv, optstr, longopts, NULL)) != -1) {
+		switch (ch) {
+		case 'F':
+			fov = atof(optarg);
+			break;
+		case 'M':
+			faint = atof(optarg);
+			break;
+		case 'N':
+			kstar = atoi(optarg);
+			break;
+		case 'S':
+			style = atoi(optarg);
+			break;
+		default:
+			Usage();
+			return 1;
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (fov < 0.1 || fov > 60.0) {
+		printf ("the diameter of FOV should be between 0.1 and 60 degrees\n");
+		return -1;
+	}
+	if (faint < 5.0 || faint > 12.0) {
+		printf ("the faintest magnitude should be between 5.0 and 12.0\n");
+		return -2;
+	}
+	if (kstar < 3 || kstar > 10) {
+		printf ("the star number in any shape should be between 3 and 10\n");
+		return -3;
+	}
+	if (style != 1 && style != 2) {
+		printf ("style value should be 1 or 2\n");
+		return -4;
+	}
+
 	return 0;
 }
